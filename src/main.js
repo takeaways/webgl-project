@@ -1,28 +1,30 @@
-import TextSign from './TextSign.js';
+import * as THREE from "three";
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(
+  75,
+  window.innerWidth / window.innerHeight,
+  0.1,
+  1000
+);
 
-const textSign = new TextSign();
+const renderer = new THREE.WebGLRenderer();
+renderer.setSize(window.innerWidth, window.innerHeight);
+document.body.appendChild(renderer.domElement);
 
-const condition = true;
-// const condition = false;
+const geometry = new THREE.BoxGeometry();
+const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+const cube = new THREE.Mesh(geometry, material);
+scene.add(cube);
 
-const promise = new Promise((resolve, reject) => {
-	if (condition) {
-		resolve('성공!');
-	} else {
-		reject('실패!');
-	}
-});
-promise
-	.then(message => {
-		console.log(message);
-		textSign.elem.innerHTML = message;
-		textSign.elem.dataset.state = 'success';
-	})
-	.catch(error => {
-		console.log(error);
-		textSign.elem.innerHTML = error;
-		textSign.elem.dataset.state = 'failure';
-	})
-	.finally(() => {
-		console.log('끝에 실행');
-	});
+camera.position.z = 5;
+
+function animate() {
+  requestAnimationFrame(animate);
+
+  cube.rotation.x += 0.01;
+  cube.rotation.y += 0.01;
+
+  renderer.render(scene, camera);
+}
+
+animate();
