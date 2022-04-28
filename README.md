@@ -15,7 +15,9 @@
 
 시야각
 
-- Field of View: 어느 각도로 볼 수 있는가
+- fov (Field of View): 어느 각도로 볼 수 있는가
+- aspenct: 가로세로비
+- near - far: 사이에 있고 시야각 안에 있어야 보인다.
 
 # Light
 
