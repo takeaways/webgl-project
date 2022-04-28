@@ -26,3 +26,14 @@
 # Renderer
 
 카라메라 보고 있는 장면을 렌더
+
+```js
+//1 make canvas from renderer
+const renderer = new THREE.WebGLRenderer();
+renderer.setSize(window.innerWidth, window.innerHeight);
+document.body.appendChild(renderer.domElement);
+
+//2 use canvas aleady exited in html
+const canvas = document.querySelector("#three-canvas");
+const renderer = new THREE.WebGLRenderer({ canvas });
+```

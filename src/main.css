@@ -5,3 +5,9 @@ body {
   height: 100%;
   margin: 0;
 }
+
+#three-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
