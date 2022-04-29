@@ -62,8 +62,9 @@ const clock = new THREE.Clock();
 function draw() {
   stats.update();
   camera.lookAt(mesh.position);
-  mesh.position.set(-1, 2, -5);
-  mesh.position.distanceTo(new THREE.Vector3(1, 2, 0));
+
+  mesh.scale.x = 2;
+  mesh.scale.y = 0.5;
   renderer.render(scene, camera);
   renderer.setAnimationLoop(draw);
 }

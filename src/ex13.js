@@ -59,11 +59,16 @@ gui //
 // 그리기
 const clock = new THREE.Clock();
 
+mesh.rotation.reorder("XYZ");
 function draw() {
   stats.update();
   camera.lookAt(mesh.position);
-  mesh.position.set(-1, 2, -5);
-  mesh.position.distanceTo(new THREE.Vector3(1, 2, 0));
+
+  mesh.scale.x = 2;
+  mesh.scale.y = 0.5;
+  mesh.rotation.x = THREE.MathUtils.degToRad(0.1 * Date.now());
+  mesh.rotation.y = THREE.MathUtils.degToRad(0.1 * Date.now());
+  mesh.rotation.z = THREE.MathUtils.degToRad(0.1 * Date.now());
   renderer.render(scene, camera);
   renderer.setAnimationLoop(draw);
 }
