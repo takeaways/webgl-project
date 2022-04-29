@@ -39,13 +39,15 @@ const material = new THREE.MeshStandardMaterial({
 const mesh = new THREE.Mesh(geometry, material);
 scene.add(mesh);
 const clock = new THREE.Clock();
+
+let oldTime = Date.now();
 function draw() {
-  // getElapsedTime 경과 시간
-  const time = clock.getElapsedTime() * 2;
-  console.log(time);
-  mesh.rotation.y = time;
-  // mesh.rotation.y += THREE.MathUtils.degToRad(1);
-  mesh.position.y += 0.01;
+  const newTime = Date.now();
+  const delta = newTime - oldTime;
+  oldTime = newTime;
+  mesh.rotation.y += delta * 0.001;
+  mesh.position.y += delta * 0.001;
+
   if (mesh.position.y > 3) {
     mesh.position.y = 0;
   }
