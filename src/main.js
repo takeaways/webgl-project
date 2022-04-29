@@ -1,1 +1,1 @@
-import "./ex04.js";
+import "./ex05.js";
