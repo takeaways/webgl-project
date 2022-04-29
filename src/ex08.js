@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import gsap from "gsap";
 
 const canvas = document.querySelector("#three-canvas");
 
@@ -39,27 +40,20 @@ const geometry = new THREE.BoxGeometry(1, 1, 1);
 const material = new THREE.MeshStandardMaterial({
   color: "tomato",
 });
-const meshes = [];
-for (let i = 0; i < 10; i++) {
-  const mesh = new THREE.Mesh(geometry, material);
-  mesh.position.x = Math.random() * 5 - 2.5;
-  mesh.position.z = Math.random() * 5 - 2.5;
-  meshes.push(mesh);
-  scene.add(mesh);
-}
 
-const clock = new THREE.Clock();
+const mesh = new THREE.Mesh(geometry, material);
+scene.add(mesh);
+
 function draw() {
   renderer.render(scene, camera);
-  // requestAnimationFrame(draw); //직접 써도 되나
-  meshes.forEach((item) => {
-    console.log("0-0");
-    console.log(item);
-    item.rotation.y += clock.getDelta() * 100;
-  });
   renderer.setAnimationLoop(draw); // 이거를 VR 만들 때는 필요
 }
 
+gsap.to(mesh.position, {
+  duration: 1,
+  y: 2,
+  z: 3,
+});
 draw();
 
 function setSize() {
