@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
-
-// ----- 주제:
+import { PreventDragClick } from "./utils/drag";
+// ----- 주제: 클릭으로 하기
 
 export default function example() {
   // Renderer
@@ -45,12 +45,11 @@ export default function example() {
   const points = [];
   points.push(new THREE.Vector3(0, 0, 100));
   points.push(new THREE.Vector3(0, 0, -100));
-  const lineGeometry = new THREE.BufferGeometry().setFromPoints(points);
-  const guide = new THREE.Line(lineGeometry, lineMeterial);
-  scene.add(guide);
 
   //
   const raycaster = new THREE.Raycaster();
+  const mouse = new THREE.Vector2();
+  console.log(mouse);
 
   const boxGeometry = new THREE.BoxGeometry(1, 1, 1);
   const boxMaterial = new THREE.MeshStandardMaterial({ color: "pulm" });
@@ -70,21 +69,23 @@ export default function example() {
 
     const time = clock.getElapsedTime();
 
-    boxMesh.position.y = Math.sin(time) * 2;
-    torusMesh.position.y = Math.cos(time) * 2;
-    boxMesh.material.color.set("plum");
-    torusMesh.material.color.set("lime");
-
-    const origin = new THREE.Vector3(0, 0, 100);
-    const direction = new THREE.Vector3(0, 0, -1);
-    raycaster.set(origin, direction);
-    const intersects = raycaster.intersectObjects(meshes);
-    intersects.forEach((item) => {
-      item.object.material.color.set("red");
-    });
+    // boxMesh.position.y = Math.sin(time) * 2;
+    // torusMesh.position.y = Math.cos(time) * 2;
+    // boxMesh.material.color.set("plum");
+    // torusMesh.material.color.set("lime");
 
     renderer.render(scene, camera);
     renderer.setAnimationLoop(draw);
+  }
+
+  function checkIntersects() {
+    if (preventDragClick.mouseMoved) return;
+    raycaster.setFromCamera(mouse, camera);
+    const intersects = raycaster.intersectObjects(meshes);
+    for (const item of intersects) {
+      item.object.material.color.set("red");
+      break;
+    }
   }
 
   function setSize() {
@@ -96,6 +97,13 @@ export default function example() {
 
   // 이벤트
   window.addEventListener("resize", setSize);
+  canvas.addEventListener("click", (e) => {
+    mouse.x = (e.clientX / canvas.clientWidth) * 2 - 1;
+    mouse.y = -((e.clientY / canvas.clientHeight) * 2 - 1);
+    checkIntersects();
+  });
+
+  const preventDragClick = new PreventDragClick(canvas);
 
   draw();
 }
