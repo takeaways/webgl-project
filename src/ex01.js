@@ -1,56 +1,69 @@
-import * as THREE from "three";
+import * as THREE from 'three';
 
-// const renderer = new THREE.WebGLRenderer();
-// renderer.setSize(window.innerWidth, window.innerHeight);
-// document.body.appendChild(renderer.domElement);
+// ----- 주제: 
 
-const canvas = document.querySelector("#three-canvas");
+export default function example() {
+	// Renderer
+	const canvas = document.querySelector('#three-canvas');
+	const renderer = new THREE.WebGLRenderer({
+		canvas,
+		antialias: true
+	});
+	renderer.setSize(window.innerWidth, window.innerHeight);
+	renderer.setPixelRatio(window.devicePixelRatio > 1 ? 2 : 1);
 
-const renderer = new THREE.WebGLRenderer({
-  canvas,
-  antialias: true,
-});
-renderer.setSize(
-  canvas.getBoundingClientRect().width,
-  canvas.getBoundingClientRect().height
-);
-document.body.appendChild(renderer.domElement);
+	// Scene
+	const scene = new THREE.Scene();
 
-const scene = new THREE.Scene();
+	// Camera
+	const camera = new THREE.PerspectiveCamera(
+		75,
+		window.innerWidth / window.innerHeight,
+		0.1,
+		1000
+	);
+	camera.position.y = 1.5;
+	camera.position.z = 4;
+	scene.add(camera);
 
-// 원근이 보이는 카메라
-const camera = new THREE.PerspectiveCamera(
-  75,
-  window.innerWidth / window.innerHeight,
-  0.1, //near
-  1000 //far
-);
+	// Light
+	const ambientLight = new THREE.AmbientLight('white', 0.5);
+	scene.add(ambientLight);
 
-// 원근 없이 같이 보이는 카메라
-// const camera = new THREE.OrthographicCamera(
-//   -(window.innerWidth / window.innerHeight), //
-//   window.innerWidth / window.innerHeight,
-//   1,
-//   -1,
-//   0.1,
-//   1000
-// );
+	const directionalLight = new THREE.DirectionalLight('white', 1);
+	directionalLight.position.x = 1;
+	directionalLight.position.z = 2;
+	scene.add(directionalLight);
 
-camera.position.x = 1;
-camera.position.y = 2;
-camera.position.z = 5;
+	// Controls
 
-camera.lookAt(0, 0, 0);
-camera.zoom = 0.5;
-camera.updateProjectionMatrix();
+	// Mesh
+	const geometry = new THREE.BoxGeometry(1, 1, 1);
+	const material = new THREE.MeshStandardMaterial({
+		color: 'seagreen'
+	});
+	const mesh = new THREE.Mesh(geometry, material);
+	scene.add(mesh);
 
-scene.add(camera);
+	// 그리기
+	const clock = new THREE.Clock();
 
-const geometry = new THREE.BoxGeometry(1, 1, 1);
-const material = new THREE.MeshBasicMaterial({
-  color: "tomato",
-});
-const mesh = new THREE.Mesh(geometry, material);
-scene.add(mesh);
+	function draw() {
+		const delta = clock.getDelta();
 
-renderer.render(scene, camera);
+		renderer.render(scene, camera);
+		renderer.setAnimationLoop(draw);
+	}
+
+	function setSize() {
+		camera.aspect = window.innerWidth / window.innerHeight;
+		camera.updateProjectionMatrix();
+		renderer.setSize(window.innerWidth, window.innerHeight);
+		renderer.render(scene, camera);
+	}
+
+	// 이벤트
+	window.addEventListener('resize', setSize);
+
+	draw();
+}

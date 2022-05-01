@@ -1,15 +1,8 @@
-html {
-  height: 100%;
-  background-color: black;
-}
 body {
-  height: 100%;
-  margin: 0;
-  background-color: black;
+	margin: 0;
 }
-
 #three-canvas {
-  position: absolute;
-  top: 0;
-  left: 0;
+	position: absolute;
+	left: 0;
+	top: 0;
 }
