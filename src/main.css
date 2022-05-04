@@ -1,8 +1,27 @@
 body {
-	margin: 0;
+  margin: 0;
 }
 #three-canvas {
-	position: absolute;
-	left: 0;
-	top: 0;
+  position: fixed;
+  left: 0;
+  top: 0;
+}
+
+.sections {
+  position: relative;
+}
+
+.sections section {
+  padding: 5rem;
+  height: 100vh;
+  box-sizing: border-box;
+}
+
+.sections section h2 {
+  margin: 0;
+  font-size: 10vmin;
+}
+
+.sections section:nth-child(odd) {
+  text-align: right;
 }
