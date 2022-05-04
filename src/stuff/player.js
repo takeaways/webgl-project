@@ -21,7 +21,7 @@ export class Player extends Stuff {
     this.mesh.position.set(this.x, this.y, this.z);
     cm1.scene.add(this.mesh);
 
-    cm1.gltfLoader.load("/models/ilbuni.glb", (glb) => {
+    cm1.gltfLoader.load("./models/ilbuni.glb", (glb) => {
       this.modelMesh = glb.scene.children[0];
       this.modelMesh.position.set(this.x, this.y, this.z);
       this.modelMesh.animations = glb.animations;

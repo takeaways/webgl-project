@@ -50,11 +50,11 @@ export const mat = {
 };
 
 const normalSound = new Audio();
-normalSound.src = "/sounds/crash.mp3";
+normalSound.src = "./sounds/crash.mp3";
 const strongSound = new Audio();
-strongSound.src = "/sounds/step.mp3";
+strongSound.src = "./sounds/step.mp3";
 const backSound = new Audio();
-backSound.src = "/sounds/back.mp3";
+backSound.src = "./sounds/back.mp3";
 
 export const sounds = {
   normal: normalSound,

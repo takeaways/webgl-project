@@ -8,11 +8,9 @@ const webpackMode = process.env.NODE_ENV || "development";
 
 module.exports = {
   mode: webpackMode,
-  entry: {
-    main: "./src/main.js",
-  },
+  entry: "./src/main.js",
   output: {
-    path: path.resolve("./dist"),
+    path: path.resolve("./build"),
     filename: "[name].min.js",
   },
   devServer: {
