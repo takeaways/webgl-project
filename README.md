@@ -39,3 +39,7 @@ document.body.appendChild(renderer.domElement);
 const canvas = document.querySelector("#three-canvas");
 const renderer = new THREE.WebGLRenderer({ canvas });
 ```
+
+## glTF - json format d3 :)
+
+make 3D file with [blender](https://www.blender.org/)!
