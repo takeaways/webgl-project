@@ -2,7 +2,7 @@ import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { PreventDragClick } from "./utils/drag";
 import * as CANNON from "cannon-es";
-// ----- 주제: 클릭으로 하기
+// ----- 주제: Contact Material
 
 export default function example() {
   // Renderer
@@ -13,7 +13,8 @@ export default function example() {
   });
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.setPixelRatio(window.devicePixelRatio > 1 ? 2 : 1);
-
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   // Scene
   const scene = new THREE.Scene();
 
@@ -36,6 +37,7 @@ export default function example() {
   const directionalLight = new THREE.DirectionalLight("white", 1);
   directionalLight.position.x = 1;
   directionalLight.position.z = 2;
+  directionalLight.castShadow = true;
   scene.add(directionalLight);
 
   // Controls
@@ -44,37 +46,80 @@ export default function example() {
   // Cannon
   const connonWorld = new CANNON.World(); // [1] 월드 생성
   connonWorld.gravity.set(0, -10, 0); // [2] 중력셋팅
+
+  const defaultMaterial = new CANNON.Material("default");
+  const rubberMaterial = new CANNON.Material("rubber");
+  const ironMaterial = new CANNON.Material("iron");
+  const defaultContactMaterial = new CANNON.ContactMaterial(
+    defaultMaterial,
+    defaultMaterial,
+    {
+      friction: 0.5,
+      restitution: 0.4,
+    }
+  );
+
+  connonWorld.defaultContactMaterial = defaultContactMaterial;
+  const rubberDefaultContactMaterial = new CANNON.ContactMaterial(
+    rubberMaterial,
+    defaultMaterial,
+    {
+      friction: 0.5,
+      restitution: 0.7,
+    }
+  );
+
+  connonWorld.addContactMaterial(rubberDefaultContactMaterial);
+
+  const ironDefaultContactMaterial = new CANNON.ContactMaterial(
+    ironMaterial,
+    defaultMaterial,
+    {
+      friction: 0.5,
+      restitution: 0,
+    }
+  );
+  connonWorld.addContactMaterial(ironDefaultContactMaterial);
+
   const floorShape = new CANNON.Plane();
   const floorBody = new CANNON.Body({
     mass: 0,
     position: new CANNON.Vec3(0, 0, 0),
     shape: floorShape,
+    material: defaultMaterial,
   });
   floorBody.quaternion.setFromAxisAngle(new CANNON.Vec3(-1, 0, 0), Math.PI / 2);
   connonWorld.addBody(floorBody);
 
-  const boxShape = new CANNON.Box(new CANNON.Vec3(0.25, 2.5, 0.25));
-  const boxBody = new CANNON.Body({
+  const sphereShape = new CANNON.Sphere(0.5);
+  const sphereBody = new CANNON.Body({
     mass: 1,
     position: new CANNON.Vec3(0, 10, 0),
-    shape: boxShape,
+    shape: sphereShape,
+    material: ironMaterial,
   });
-  connonWorld.addBody(boxBody);
+  connonWorld.addBody(sphereBody);
 
   // Mesh
   const floorMesh = new THREE.Mesh(
     new THREE.PlaneGeometry(10, 10),
-    new THREE.MeshStandardMaterial({ color: "slategray" })
+    new THREE.MeshStandardMaterial({
+      color: "slategray",
+      side: THREE.DoubleSide,
+    })
   );
   floorMesh.rotation.x = -Math.PI / 2;
+  floorMesh.receiveShadow = true;
+
   scene.add(floorMesh);
 
-  const boxGeometry = new THREE.BoxGeometry(0.5, 5, 0.5);
-  const boxMaterial = new THREE.MeshStandardMaterial({ color: "yellow" });
-  const boxMesh = new THREE.Mesh(boxGeometry, boxMaterial);
-  boxMesh.position.y = 0.5;
-  boxMesh.name = "box";
-  scene.add(boxMesh);
+  const sphereGeometry = new THREE.SphereGeometry(0.5);
+  const sphereMaterial = new THREE.MeshStandardMaterial({ color: "yellow" });
+  const sphereMesh = new THREE.Mesh(sphereGeometry, sphereMaterial);
+  sphereMesh.position.y = 0.5;
+  sphereMesh.name = "box";
+  sphereMesh.castShadow = true;
+  scene.add(sphereMesh);
 
   // raycaster
   const raycaster = new THREE.Raycaster();
@@ -89,8 +134,8 @@ export default function example() {
     let cannoStepTime = 1 / 60;
     if (delta < 0.01) cannoStepTime = 1 / 120;
     connonWorld.step(cannoStepTime, delta, 3);
-    boxMesh.position.copy(boxBody.position);
-    boxMesh.quaternion.copy(boxBody.quaternion);
+    sphereMesh.position.copy(sphereBody.position);
+    sphereMesh.quaternion.copy(sphereBody.quaternion);
 
     renderer.render(scene, camera);
     renderer.setAnimationLoop(draw);

@@ -1,8 +1,9 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { PreventDragClick } from "./utils/drag";
+import { Sphere } from "./utils/sphere";
 import * as CANNON from "cannon-es";
-// ----- 주제: 클릭으로 하기
+// ----- 주제: Contact Material
 
 export default function example() {
   // Renderer
@@ -13,7 +14,8 @@ export default function example() {
   });
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.setPixelRatio(window.devicePixelRatio > 1 ? 2 : 1);
-
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   // Scene
   const scene = new THREE.Scene();
 
@@ -36,45 +38,56 @@ export default function example() {
   const directionalLight = new THREE.DirectionalLight("white", 1);
   directionalLight.position.x = 1;
   directionalLight.position.z = 2;
+  directionalLight.castShadow = true;
   scene.add(directionalLight);
 
   // Controls
   const orbitControl = new OrbitControls(camera, renderer.domElement);
 
   // Cannon
-  const connonWorld = new CANNON.World(); // [1] 월드 생성
-  connonWorld.gravity.set(0, -10, 0); // [2] 중력셋팅
+  const cannonWorld = new CANNON.World(); // [1] 월드 생성
+  cannonWorld.gravity.set(0, -10, 0); // [2] 중력셋팅
+  cannonWorld.allowSleep = true;
+  cannonWorld.broadphase = new CANNON.SAPBroadphase(cannonWorld);
+
+  const defaultMaterial = new CANNON.Material("default");
+  const defaultContactMaterial = new CANNON.ContactMaterial(
+    defaultMaterial,
+    defaultMaterial,
+    {
+      friction: 0.5,
+      restitution: 0.4,
+    }
+  );
+
+  cannonWorld.defaultContactMaterial = defaultContactMaterial;
+
   const floorShape = new CANNON.Plane();
   const floorBody = new CANNON.Body({
     mass: 0,
     position: new CANNON.Vec3(0, 0, 0),
     shape: floorShape,
+    material: defaultMaterial,
   });
   floorBody.quaternion.setFromAxisAngle(new CANNON.Vec3(-1, 0, 0), Math.PI / 2);
-  connonWorld.addBody(floorBody);
-
-  const boxShape = new CANNON.Box(new CANNON.Vec3(0.25, 2.5, 0.25));
-  const boxBody = new CANNON.Body({
-    mass: 1,
-    position: new CANNON.Vec3(0, 10, 0),
-    shape: boxShape,
-  });
-  connonWorld.addBody(boxBody);
+  cannonWorld.addBody(floorBody);
 
   // Mesh
   const floorMesh = new THREE.Mesh(
     new THREE.PlaneGeometry(10, 10),
-    new THREE.MeshStandardMaterial({ color: "slategray" })
+    new THREE.MeshStandardMaterial({
+      color: "slategray",
+      side: THREE.DoubleSide,
+    })
   );
   floorMesh.rotation.x = -Math.PI / 2;
+  floorMesh.receiveShadow = true;
+
   scene.add(floorMesh);
 
-  const boxGeometry = new THREE.BoxGeometry(0.5, 5, 0.5);
-  const boxMaterial = new THREE.MeshStandardMaterial({ color: "yellow" });
-  const boxMesh = new THREE.Mesh(boxGeometry, boxMaterial);
-  boxMesh.position.y = 0.5;
-  boxMesh.name = "box";
-  scene.add(boxMesh);
+  const spheres = [];
+  const sphereGeometry = new THREE.SphereGeometry(0.5);
+  const sphereMaterial = new THREE.MeshStandardMaterial({ color: "yellow" });
 
   // raycaster
   const raycaster = new THREE.Raycaster();
@@ -84,13 +97,23 @@ export default function example() {
   const clock = new THREE.Clock();
   function draw() {
     const delta = clock.getDelta();
-    const time = clock.getElapsedTime();
 
     let cannoStepTime = 1 / 60;
     if (delta < 0.01) cannoStepTime = 1 / 120;
-    connonWorld.step(cannoStepTime, delta, 3);
-    boxMesh.position.copy(boxBody.position);
-    boxMesh.quaternion.copy(boxBody.quaternion);
+    cannonWorld.step(cannoStepTime, delta, 3);
+
+    spheres.forEach((item) => {
+      item.mesh.position.copy(item.cannonBody.position);
+      item.mesh.quaternion.copy(item.cannonBody.quaternion);
+      item.cannonBody.velocity.x *= 0.99;
+      item.cannonBody.velocity.y *= 0.99;
+      item.cannonBody.velocity.z *= 0.99;
+      item.cannonBody.angularVelocity.x *= 0.99;
+      item.cannonBody.angularVelocity.y *= 0.99;
+      item.cannonBody.angularVelocity.z *= 0.99;
+    });
+
+    spheres.forEach((item) => {});
 
     renderer.render(scene, camera);
     renderer.setAnimationLoop(draw);
@@ -107,6 +130,32 @@ export default function example() {
   window.addEventListener("resize", setSize);
 
   const preventDragClick = new PreventDragClick(canvas);
+
+  const sound = new Audio("/sounds/boing.mp3");
+  function collide(e) {
+    const velocity = e.contact.getImpactVelocityAlongNormal();
+    console.log(velocity);
+    if (velocity > 4) {
+      sound.currentTime = 0;
+      sound.play();
+    }
+  }
+  canvas.addEventListener("click", () => {
+    const newSphere = new Sphere({
+      cannonWorld,
+      scene,
+      geometry: sphereGeometry,
+      material: sphereMaterial,
+      x: (Math.random() - 0.5) * 2,
+      y: Math.random() * 5 + 2,
+      z: (Math.random() - 0.5) * 2,
+      scale: Math.random() + 0.2,
+    });
+
+    spheres.push(newSphere);
+
+    newSphere.cannonBody.addEventListener("collide", collide);
+  });
 
   draw();
 }
